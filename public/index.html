@@ -49,69 +49,167 @@
     <script type="text/babel">
 const { useState, useEffect } = React;
 
-// ===== DONNÉES RÉALISTES =====
+// ===== CONFIG SUPABASE =====
+const SUPABASE_URL = 'https://ngzvurmhqnanoghjyswh.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5nenZ1cm1ocW5hbm9naGp5c3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1OTc2MTIsImV4cCI6MjA4NDE3MzYxMn0.Sk9M-tUkZY5p0OPw7xT0UOaIgOR3SQRACSVyi_TL61Q';
 
-// Comparateurs de prix (agrégateurs)
-const comparatorData = [
-    { id: 1, name: 'AllKeyShop', logo: 'https://ngzvurmhqnanoghjyswh.supabase.co/storage/v1/object/public/screenshots/allkeyshop-logo.png', score: 92, checks: 1234, avgDiff: 0.25, badge: 'EXCELLENT', trend: 'stable', since: '2024', desc: 'Comparateur historique, très complet' },
-    { id: 2, name: 'GG.deals', logo: 'https://ngzvurmhqnanoghjyswh.supabase.co/storage/v1/object/public/screenshots/ggdeals-logo.png', score: 95, checks: 1567, avgDiff: 0.15, badge: 'RÉFÉRENCE', trend: 'up', since: '2024', desc: 'Interface moderne, données précises' },
-    { id: 3, name: 'IsThereAnyDeal', logo: 'https://ngzvurmhqnanoghjyswh.supabase.co/storage/v1/object/public/screenshots/itad-logo.png', score: 88, checks: 456, avgDiff: 0.35, badge: 'FIABLE', trend: 'stable', since: '2025', desc: 'Focus sur les stores officiels' },
-    { id: 4, name: 'Idealo Gaming', logo: 'https://ngzvurmhqnanoghjyswh.supabase.co/storage/v1/object/public/screenshots/idealo-logo.png', score: 78, checks: 234, avgDiff: 0.85, badge: 'CORRECT', trend: 'up', since: '2025', desc: 'Nouveau dans le gaming' },
-];
-
-// Marchands (revendeurs de clés)
-const vendorData = [
-    { id: 1, name: 'CDKeys', logo: '🔑', score: 94, checks: 567, avgDiff: 0.18, badge: 'TRÈS FIABLE', trend: 'up', since: '2024', screenshot: 'https://ngzvurmhqnanoghjyswh.supabase.co/storage/v1/object/public/screenshots/1769359240869-850942217.png' },
-    { id: 2, name: 'Gamesplanet', logo: '🌍', score: 91, checks: 234, avgDiff: 0.31, badge: 'TRÈS FIABLE', trend: 'up', since: '2025', screenshot: 'https://ngzvurmhqnanoghjyswh.supabase.co/storage/v1/object/public/screenshots/1769359290384-871505717.png' },
-    { id: 3, name: 'Fanatical', logo: '🎯', score: 89, checks: 312, avgDiff: 0.42, badge: 'FIABLE', trend: 'stable', since: '2024', screenshot: null },
-    { id: 4, name: 'Instant Gaming', logo: '⚡', score: 87, checks: 723, avgDiff: 0.52, badge: 'FIABLE', trend: 'stable', since: '2024', screenshot: 'https://ngzvurmhqnanoghjyswh.supabase.co/storage/v1/object/public/screenshots/1769359343492-426655225.png' },
-    { id: 5, name: 'Eneba', logo: '🛒', score: 71, checks: 1243, avgDiff: 1.85, badge: 'VARIABLE', trend: 'down', since: '2024', screenshot: null },
-    { id: 6, name: 'G2A', logo: '🏪', score: 58, checks: 1567, avgDiff: 2.74, badge: 'ATTENTION', trend: 'down', since: '2024', screenshot: null },
-    { id: 7, name: 'Kinguin', logo: '👑', score: 42, checks: 876, avgDiff: 4.12, badge: 'RISQUÉ', trend: 'down', since: '2024', screenshot: null },
-];
-
-const badOffers = [
-    { id: 1, game: 'GTA VI Pre-order', vendor: 'Kinguin', advertised: '45.99€', actual: '67.50€', diff: '+47%', date: '28 Jan 2026', type: 'bait-switch', status: 'confirmed' },
-    { id: 2, game: 'EA Sports FC 26', vendor: 'G2A', advertised: '52.00€', actual: '61.85€', diff: '+19%', date: '27 Jan 2026', type: 'hidden-fees', status: 'confirmed' },
-    { id: 3, game: 'Call of Duty MW3', vendor: 'Eneba', advertised: '48.99€', actual: '56.20€', diff: '+15%', date: '26 Jan 2026', type: 'currency-trick', status: 'confirmed' },
-    { id: 4, game: 'Cyberpunk 2077 Ultimate', vendor: 'Kinguin', advertised: '29.99€', actual: '42.00€', diff: '+40%', date: '25 Jan 2026', type: 'bait-switch', status: 'confirmed' },
-    { id: 5, game: 'Elden Ring', vendor: 'G2A', advertised: '35.00€', actual: '43.50€', diff: '+24%', date: '24 Jan 2026', type: 'hidden-fees', status: 'confirmed' },
-    { id: 6, game: 'Hogwarts Legacy', vendor: 'Eneba', advertised: '32.50€', actual: '38.90€', diff: '+20%', date: '23 Jan 2026', type: 'service-fee', status: 'confirmed' },
-];
-
-const badCoupons = [
-    { id: 1, code: 'SAVE20', vendor: 'Kinguin', promise: '-20%', reality: '-3% après frais', game: 'Tous les jeux', date: '29 Jan 2026', status: 'misleading' },
-    { id: 2, code: 'WINTER25', vendor: 'G2A', promise: '-25%', reality: 'Invalide sur 80% des jeux', game: 'Sélection limitée', date: '28 Jan 2026', status: 'restricted' },
-    { id: 3, code: 'NEWUSER15', vendor: 'Eneba', promise: '-15%', reality: '-15% mais frais +12%', game: 'Premier achat', date: '27 Jan 2026', status: 'misleading' },
-    { id: 4, code: 'VIP10', vendor: 'Kinguin', promise: '-10% VIP', reality: 'Nécessite abonnement 5€/mois', game: 'Tous', date: '26 Jan 2026', status: 'hidden-cost' },
-];
-
-const stats = {
-    totalChecks: 6414,
-    vendorsAudited: 7,
-    comparatorsAudited: 4,
-    avgLieRate: 26.9,
-    badOffersExposed: 847,
-    badCouponsExposed: 156,
-    lastUpdate: '30 Jan 2026, 14:32',
-    startedSince: 'Novembre 2024'
+// Logos par défaut pour les sources connues
+const SOURCE_LOGOS = {
+    'AllKeyShop': '🔵', 'GG.deals': '🟢', 'IsThereAnyDeal': '🟡', 'Idealo': '🟠', 'DLCompare': '🔴', 'CheapShark': '🦈',
+    'CDKeys': '🔑', 'Gamesplanet': '🌍', 'Fanatical': '🎯', 'Instant Gaming': '⚡', 'Eneba': '🛒', 'G2A': '🏪', 'Kinguin': '👑',
+    'Gamivo': '🎪', 'HRK': '🎮', 'Green Man Gaming': '🟩', 'Humble': '📦', 'GOG': '🎁'
 };
 
 // ===== COMPOSANTS =====
 function App() {
     const [currentPage, setCurrentPage] = useState('home');
+    const [loading, setLoading] = useState(true);
+    const [rawOffers, setRawOffers] = useState([]);
+    const [rawChecks, setRawChecks] = useState([]);
+
+    // Charger les données depuis Supabase
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const [offersRes, checksRes] = await Promise.all([
+                    fetch(`${SUPABASE_URL}/rest/v1/offers?select=*`, {
+                        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+                    }),
+                    fetch(`${SUPABASE_URL}/rest/v1/price_checks?select=*`, {
+                        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+                    })
+                ]);
+                if (offersRes.ok && checksRes.ok) {
+                    setRawOffers(await offersRes.json());
+                    setRawChecks(await checksRes.json());
+                }
+            } catch (e) { console.error('Erreur chargement:', e); }
+            setLoading(false);
+        };
+        loadData();
+    }, []);
+
+    // Calculer les données dérivées
+    const offersWithChecks = rawOffers.map(offer => ({
+        ...offer,
+        checks: rawChecks.filter(c => c.offer_id === offer.id),
+        lastCheck: rawChecks.find(c => c.offer_id === offer.id)
+    }));
+
+    // Calculer les scores par source (marchand ou comparateur)
+    const calculateSourceStats = () => {
+        const sourceStats = {};
+
+        offersWithChecks.forEach(offer => {
+            const source = offer.store || 'Inconnu';
+            if (!sourceStats[source]) {
+                sourceStats[source] = { name: source, checks: 0, totalDiff: 0, diffs: [], offers: [] };
+            }
+
+            if (offer.displayed_price && offer.lastCheck?.checkout_price) {
+                const diff = offer.lastCheck.checkout_price - offer.displayed_price;
+                const pct = (diff / offer.displayed_price) * 100;
+                sourceStats[source].checks++;
+                sourceStats[source].totalDiff += Math.abs(pct);
+                sourceStats[source].diffs.push({ pct, diff, offer });
+                sourceStats[source].offers.push(offer);
+            }
+        });
+
+        // Calculer score et badge pour chaque source
+        return Object.values(sourceStats).map((s, i) => {
+            const avgDiffPct = s.checks > 0 ? s.totalDiff / s.checks : 0;
+            // Score: 100 - avgDiff (plus l'écart est faible, meilleur le score)
+            const score = Math.max(0, Math.min(100, Math.round(100 - avgDiffPct * 2)));
+            const badge = score >= 95 ? 'RÉFÉRENCE' : score >= 85 ? 'TRÈS FIABLE' : score >= 75 ? 'FIABLE' : score >= 60 ? 'VARIABLE' : score >= 40 ? 'ATTENTION' : 'RISQUÉ';
+            const avgDiff = s.checks > 0 ? (s.totalDiff / s.checks / 100 * (s.offers[0]?.displayed_price || 30)).toFixed(2) : 0;
+
+            return {
+                id: i + 1,
+                name: s.name,
+                logo: SOURCE_LOGOS[s.name] || '🏷️',
+                score,
+                checks: s.checks,
+                avgDiff: parseFloat(avgDiff),
+                badge,
+                trend: 'stable',
+                since: '2024',
+                diffs: s.diffs,
+                offers: s.offers
+            };
+        }).sort((a, b) => b.score - a.score);
+    };
+
+    // Générer les "arnaques" (offres avec écart > 10%)
+    const generateBadOffers = () => {
+        const bad = [];
+        offersWithChecks.forEach(offer => {
+            if (offer.displayed_price && offer.lastCheck?.checkout_price) {
+                const diff = offer.lastCheck.checkout_price - offer.displayed_price;
+                const pct = (diff / offer.displayed_price) * 100;
+                if (pct > 10) {
+                    bad.push({
+                        id: offer.id,
+                        game: offer.name || 'Jeu inconnu',
+                        vendor: offer.store || 'Inconnu',
+                        advertised: `${offer.displayed_price.toFixed(2)}€`,
+                        actual: `${offer.lastCheck.checkout_price.toFixed(2)}€`,
+                        diff: `+${pct.toFixed(0)}%`,
+                        date: new Date(offer.lastCheck.check_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }),
+                        type: pct > 30 ? 'bait-switch' : pct > 20 ? 'hidden-fees' : 'service-fee',
+                        status: 'confirmed',
+                        screenshot: offer.lastCheck.screenshot_url || offer.displayed_price_screenshot
+                    });
+                }
+            }
+        });
+        return bad.sort((a, b) => parseFloat(b.diff) - parseFloat(a.diff)).slice(0, 20);
+    };
+
+    const sourceStats = calculateSourceStats();
+    const vendorData = sourceStats; // Tous dans le même classement (marchands + comparateurs)
+    const comparatorData = sourceStats.filter(s => ['AllKeyShop', 'GG.deals', 'IsThereAnyDeal', 'Idealo', 'DLCompare', 'CheapShark'].includes(s.name));
+    const badOffers = generateBadOffers();
+
+    // Stats globales calculées
+    const stats = {
+        totalChecks: rawChecks.length,
+        vendorsAudited: sourceStats.length,
+        comparatorsAudited: comparatorData.length,
+        avgLieRate: sourceStats.length > 0 ? (sourceStats.reduce((sum, s) => sum + (100 - s.score), 0) / sourceStats.length).toFixed(1) : 0,
+        badOffersExposed: badOffers.length,
+        badCouponsExposed: 0,
+        lastUpdate: new Date().toLocaleString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+        startedSince: 'Novembre 2024'
+    };
+
+    // Placeholder pour les coupons (à implémenter plus tard)
+    const badCoupons = [];
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse">
+                        <span className="text-white font-bold text-2xl">T</span>
+                    </div>
+                    <p className="text-gray-500">Chargement des données...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50">
             <Navbar currentPage={currentPage} setCurrentPage={setCurrentPage} />
             <main>
-                {currentPage === 'home' && <HomePage setCurrentPage={setCurrentPage} />}
-                {currentPage === 'rankings' && <RankingsPage />}
-                {currentPage === 'bad-offers' && <BadOffersPage />}
-                {currentPage === 'bad-coupons' && <BadCouponsPage />}
-                {currentPage === 'about' && <AboutPage />}
+                {currentPage === 'home' && <HomePage setCurrentPage={setCurrentPage} vendorData={vendorData} badOffers={badOffers} stats={stats} />}
+                {currentPage === 'rankings' && <RankingsPage vendorData={vendorData} comparatorData={comparatorData} stats={stats} />}
+                {currentPage === 'bad-offers' && <BadOffersPage badOffers={badOffers} stats={stats} />}
+                {currentPage === 'bad-coupons' && <BadCouponsPage badCoupons={badCoupons} stats={stats} />}
+                {currentPage === 'about' && <AboutPage stats={stats} />}
             </main>
-            <Footer />
+            <Footer stats={stats} />
         </div>
     );
 }
@@ -165,7 +263,7 @@ function Navbar({ currentPage, setCurrentPage }) {
     );
 }
 
-function HomePage({ setCurrentPage }) {
+function HomePage({ setCurrentPage, vendorData, badOffers, stats }) {
     return (
         <>
             {/* Hero Section */}
@@ -432,7 +530,7 @@ function BadOfferCard({ offer }) {
     );
 }
 
-function RankingsPage() {
+function RankingsPage({ vendorData, comparatorData, stats }) {
     const [selectedVendor, setSelectedVendor] = useState(null);
 
     return (
@@ -588,7 +686,7 @@ function RankingsPage() {
     );
 }
 
-function BadOffersPage() {
+function BadOffersPage({ badOffers, stats }) {
     return (
         <section className="py-12">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -610,7 +708,7 @@ function BadOffersPage() {
     );
 }
 
-function BadCouponsPage() {
+function BadCouponsPage({ badCoupons, stats }) {
     return (
         <section className="py-12">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -659,7 +757,7 @@ function BadCouponsPage() {
     );
 }
 
-function AboutPage() {
+function AboutPage({ stats }) {
     return (
         <section className="py-12">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -711,7 +809,7 @@ function AboutPage() {
     );
 }
 
-function Footer() {
+function Footer({ stats }) {
     return (
         <footer className="bg-secondary py-12">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
